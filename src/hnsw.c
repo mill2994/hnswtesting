@@ -99,7 +99,11 @@ hnswcostestimate(PlannerInfo *root, IndexPath *path, double loop_count,
 
 	/* TODO Improve estimate of visited tuples (currently underestimates) */
 	/* Account for number of tuples (or entry level), m, and ef_search */
-	costs.numIndexTuples = (entryLevel + 2) * m;
+	double factor = 2;
+	if (m/8 < 2) {
+	    factor = m/8;
+	}
+	costs.numIndexTuples = factor * ((entryLevel + 1) * m + 2*(entryLevel - 1)*hnsw_ef_search);
 
 #if PG_VERSION_NUM >= 120000
 	genericcostestimate(root, path, loop_count, &costs);
